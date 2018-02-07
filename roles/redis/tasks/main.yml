@@ -1,0 +1,75 @@
+- name: Installing redis dependencies
+  become: yes
+  yum:
+    name: epel-release
+
+- name: Installing redis
+  become: yes
+  yum:
+    name: redis
+
+- name: Copy redis-server and cli to /usr/local/bin
+  become: yes
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    remote_src: yes
+    mode: 0777
+    owner: vagrant
+    group: vagrant
+  with_items:
+  - {src: /usr/bin/redis-server, dest: /usr/local/bin/redis-server}
+  - {src: /usr/bin/redis-cli, dest: /usr/local/bin/redis-cli}
+
+- name: Make directory for redis logs files
+  become: yes
+  file:
+    path: '{{ item }}'
+    state: directory
+  with_items:
+  - /etc/redis
+  - /var/redis/6379
+  - /var/redis/6382
+
+- name: Adding redis init file for port 6379 and 6382
+  become: yes
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    mode: 0777
+  with_items:
+  - {src: redis_6379, dest: /etc/init.d/redis_6379}
+  - {src: redis_6382, dest: /etc/init.d/redis_6382}
+
+- name: Adding redis conf file for port 6379 and 6382 to be accessible from remote machine
+  become: yes
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    mode: 0777
+  with_items:
+  - {src: redis_6379.conf, dest: /etc/redis/6379.conf}
+  - {src: redis_6382.conf, dest: /etc/redis/6382.conf}
+
+- name: Stopping redis server at port 6379 and 6382
+  become: yes
+  file:
+    path: '{{ item }}'
+    state: absent
+  with_items:
+  - /var/run/redis_6379.pid
+  - /var/run/redis_6382.pid
+
+- name: starting redis server on port 6379
+  become: yes
+  service:
+    name: redis_6379
+    enabled: yes
+    state: restarted
+
+- name: starting redis server on port 6382
+  become: yes
+  service:
+    name: redis_6382
+    enabled: yes
+    state: restarted

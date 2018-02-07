@@ -1,0 +1,10 @@
+- name: Installing promotion_app dependencies
+  become: yes
+  yum:
+   name: "{{ item }}"
+  with_items:
+  - ImageMagick
+  - ImageMagick-devel
+
+- name: Installing all the required gems using bundle install
+  command: cd promotion_app && bundle install && cd ..

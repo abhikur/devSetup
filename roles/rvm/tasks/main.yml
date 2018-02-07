@@ -1,0 +1,61 @@
+- name: Installing rvm dependencies
+  become: yes
+  yum: name={{ item }}
+  with_items:
+  - git-core
+  - zlib
+  - zlib-devel
+  - gcc-c++
+  - patch
+  - readline
+  - readline-devel
+  - libyaml-devel
+  - libffi-devel
+  - openssl-devel
+  - make
+  - bzip2
+  - autoconf
+  - automake
+  - libtool
+  - bison
+  - curl
+  - sqlite-devel
+
+- name: Setting gpg key to download rvm
+  become: yes
+  command: gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+
+- name: Getting rvm installer
+  get_url:
+    url: https://get.rvm.io
+    dest: /home/vagrant/rvm_setup
+
+- name: Installing rvm
+  become: yes
+  command: bash -c "cat /home/vagrant/rvm_setup | bash -s stable"
+
+- name: Making directory rvm for ruby versions installation
+  become: yes
+  file:
+    path: '{{ item }}'
+    state: directory
+    recurse: yes
+    mode: 0755
+    owner: vagrant
+    group: vagrant
+  with_items:
+  - /usr/local/rvm
+
+- name: Installing ruby version 2.2.3
+  command: rvm install 2.2.3
+
+- name: Using version 2.2.3
+  command: rvm alias create default 2.2.3
+
+- name: Disabling ruby-gems documentation feature
+  template:
+    src: gemrc
+    dest: ~/.gemrc
+
+- name: Installing gem bundler
+  command: gem install bundler

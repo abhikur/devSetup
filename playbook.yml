@@ -1,0 +1,18 @@
+---
+- hosts: devbox
+  vars_files:
+    - "./configs/dev.yml"
+  roles:
+    - jdk
+    - redis
+    - nodejs
+    - git
+    - postgres
+    - rvm
+    - appProvisioning
+    - folderSetup
+
+
+# start redis server on specific ports  -- can be done automatically
+# Run migrations, local_builds  -- migration can be run automatically
+# bundle install in promotion_app and promotion_planning_service/contracts

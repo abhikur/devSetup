@@ -1,0 +1,6 @@
+- name: Restart postgres server
+  become: yes
+  service:
+    name: postgresql-9.5
+    enabled: yes
+    state: restarted

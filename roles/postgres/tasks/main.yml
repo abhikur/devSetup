@@ -1,0 +1,69 @@
+- name: Downloading postgres 9.5 repo
+  become: yes
+  get_url:
+    url: https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-7-x86_64/pgdg-centos95-9.5-3.noarch.rpm
+    dest: /opt/postgresql_9.5.rpm
+
+- name: Installing postgres 9.5
+  become: yes
+  yum: name=/opt/postgresql_9.5.rpm
+
+- name: Installing postgresql and postgresql server
+  become: yes
+  yum: state=present name={{ item }}
+  with_items:
+  - postgresql95
+  - postgresql95-server.x86_64
+  - postgresql95-contrib.x86_64
+  notify: Restart postgres server
+
+- name: Cleck if postgres init data directory exist
+  become: yes
+  find:
+    paths: /var/lib/pgsql/9.5/data/
+    recurse: yes
+  register: data_file
+
+- name: Initiate postgres db setup if not initiated previously
+  become: yes
+  command: /usr/pgsql-9.5/bin/postgresql95-setup initdb
+  when: data_file.matched|int == 0
+
+- name: "Configuring postgres to make accessible at host machine"
+  become: yes
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+  - {src: pg_hba.conf, dest: /var/lib/pgsql/9.5/data/pg_hba.conf}
+  - {src: postgresql.conf, dest: /var/lib/pgsql/9.5/data/postgresql.conf}
+  notify: Restart postgres server
+
+- name: Starting postgres server
+  become: yes
+  service:
+    name: postgresql-9.5
+    state: started
+    enabled: yes
+
+- name: Installing python psycopg2 (dependency for user psql creation)
+  become: yes
+  yum:
+    name: python-psycopg2
+
+- name: Creating role developer
+  become: yes
+  become_user: postgres
+  postgresql_user:
+    name: developer
+    password: password
+
+- name: Creating database promotion_planning and promotion
+  become: yes
+  become_user: postgres
+  postgresql_db:
+    name: "{{ item }}"
+    owner: developer
+  with_items:
+  - promotion_planning
+  - promotion
