@@ -49,6 +49,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     cm_config.vm.network :forwarded_port, guest: 9097, host: 9097
     cm_config.vm.network :forwarded_port, guest: 9080, host: 9080
     cm_config.vm.network :forwarded_port, guest: 7777, host: 7777
+    cm_config.vm.network :forwarded_port, guest: 7778, host: 7778
+    cm_config.vm.network :forwarded_port, guest: 1025, host: 1025
+    cm_config.vm.network :forwarded_port, guest: 1080, host: 1080
 
     cm_config.vm.network :private_network, ip: '192.168.20.22'
 

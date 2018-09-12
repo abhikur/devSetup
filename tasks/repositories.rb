@@ -6,6 +6,11 @@ class Repositories
             promotion_planning_service 
             generated_properties
             infrastructure
+            notification_hub
+            notification_client
+            pipe
+            store_group_service
+            merchandise_services
                   )
 
   BUNDLED = Dir.glob('../*/Gemfile').map { |x| x.split('/')[1] }.select { |repo| ALL.include?(repo) }
